@@ -7,7 +7,7 @@
 
             function learn() {
                 const order = getOrder()
-                markovChain = new markov.Markov("Demo", order)
+                markovChain = new markov.Markov("Demo", order, getAnalyzer())
                 markovChain.learn(getInputData())
 
                 enableProduce()
@@ -22,10 +22,10 @@
                 while (alreadyProduced(result) && safetyCounter++ < 1000)
                     result = markovChain.produce() 
                 
-                if (!alreadyProduced(result))
-                    addResult(result)
-                else
-                    alert("Couldn't make something original enough!")
+                if (alreadyProduced(result))
+                    console.log("Couldn't make something original enough: " + result)
+
+                addResult(result)
             }
 
             function getInputData() {
@@ -38,7 +38,7 @@
 
                 var resultItems = document.getElementById("results").getElementsByTagName("li");
                 for (let index = 0; index < resultItems.length; index++)
-                    if (resultItems[index].innerText === text)
+                    if (resultItems[index].innerText.trim().toLowerCase() == text.trim().toLowerCase())
                         return true
 
                 return false
@@ -46,6 +46,15 @@
 
             function getOrder() {
                 return parseInt(document.getElementById("order").value)
+            }
+
+            function getAnalyzer() {
+                const analyzer = document.getElementById("analyzer").value
+
+                if (analyzer === "full-stop")
+                    return new markov.FullStopAnalyzer()
+                else
+                    return new markov.TextLinesAnalyzer()
             }
 
             function addResult(text) {
@@ -68,7 +77,14 @@
         <h1>Markov this!</h1>
         <h3>Create a Markov chain from this text:</h3>
         <div><textarea id="data" cols="140" rows="10"></textarea></div>
-        <div><span>Order:</span><input id="order" type="number" value="2" min="1" max="100" /></div>
+        <div>
+            <span>Order:</span><input id="order" type="number" value="2" min="1" max="100" />
+            <span>Analyzer:</span>
+            <select id="analyzer">
+                <option value="lines" selected="selected">Lines</option>
+                <option value="full-stop">Full-stop</option>
+            </select>
+        </div>
         <div>
             <div>
                 <button onclick="learn()">Learn</button>
