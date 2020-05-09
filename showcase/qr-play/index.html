@@ -1,0 +1,26 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>QR Play</title>
+	<script type="text/javascript" src="js/jsQR.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+  </head>
+  <body onload="init()">
+	<h2>QR Play v0.3.0</h2>
+	<progress id="scanProgress" max="1" value="0" style="display:none;"></progress>
+	<canvas id="canvas" style="display:none;"></canvas>
+	<textarea id="log" rows="10" cols="80" style="display:none;"></textarea>
+	<div>
+		<audio id="audioPlayer" controls="controls" autobuffer="autobuffer">
+			<source id="audioSource" type='audio/ogg; codecs=opus' />
+		</audio>
+    </div>
+	<button onclick='scanSong()'>Escanear QRs</button>
+	<!-- div>
+		<input type="file" id="files" name="files[]" multiple />
+		<output id="droppedFiles"></output>
+	</div -->
+  </body>
+</html>
+	
