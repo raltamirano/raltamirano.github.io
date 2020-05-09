@@ -79,12 +79,13 @@ function scanImage(imageData) {
 		});
 
 		if (code) {
+			var progressBar = document.getElementById('scanProgress');
 			var qrData = code.data;
 			if (qrData.match(/^N80[0-9A-Z]{2}.+$/)) {
 				//BEEP.play();
 				
-				var readCurrentPart = l2n(qrData.substring(3, 4));
-				var readTotalParts = l2n(qrData.substring(5, 6));
+				var readCurrentPart = l2n(qrData.substring(3, 5));
+				var readTotalParts = l2n(qrData.substring(5, 7));
 				var rawData = qrData.substring(7);
 				
 				if (!totalParts) {
@@ -106,12 +107,11 @@ function scanImage(imageData) {
 				
 				if (readParts == totalParts) {
 					var songData = parts.join('');				
-					console.log(songData);
 					loadSong(songData, true);
 					stopScanning();
+					progressBar.style.display = 'none';
 					return;
 				} else {
-					var progressBar = document.getElementById('scanProgress');
 					progressBar.max = totalParts;
 					progressBar.value = readParts;
 					progressBar.style.display = 'block';
