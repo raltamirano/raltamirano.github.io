@@ -8,23 +8,25 @@ var canvasElement;
 var localStream;
 var parts = [];
 var totalParts = null;
+var beepOnNewQR = false;
 
 function init() {
 	canvasElement = document.getElementById("canvas");
 	video = document.createElement("video");
 	canvas = canvasElement.getContext("2d");
+	
 	//document.getElementById('files').addEventListener('change', handleFileSelect, false);	
 
-	if ('serviceWorker' in navigator) {
-		//console.log('CLIENT: service worker registration in progress.');
-		navigator.serviceWorker.register('service-worker.js').then(function() {
-		  //console.log('CLIENT: service worker registration complete.');
-		}, function() {
-		  console.log('CLIENT: service worker registration failure.');
-		});
-	} else {
-		console.log('CLIENT: service worker is not supported.');
-	}			
+	//if ('serviceWorker' in navigator) {
+	//	//console.log('CLIENT: service worker registration in progress.');
+	//	navigator.serviceWorker.register('service-worker.js').then(function() {
+	//	  //console.log('CLIENT: service worker registration complete.');
+	//	}, function() {
+	//	  console.log('CLIENT: service worker registration failure.');
+	//	});
+	//} else {
+	//	console.log('CLIENT: service worker is not supported.');
+	//}			
 }
 
 function handleFileSelect(evt) {
@@ -79,7 +81,6 @@ function scanImage(imageData) {
 		});
 
 		if (code) {
-			var progressBar = document.getElementById('scanProgress');
 			var qrData = code.data;
 			if (qrData.match(/^N80[0-9A-Z]{2}.+$/)) {
 				//BEEP.play();
@@ -90,6 +91,7 @@ function scanImage(imageData) {
 				
 				if (!totalParts) {
 					totalParts = readTotalParts;
+					initQRsTable(totalParts);
 				} else if (totalParts != readTotalParts) {
 					// If we just start reading a new block of parts while still reading the previous one, 
 					// reset everything 
@@ -101,20 +103,15 @@ function scanImage(imageData) {
 				if (!parts[readCurrentPart]) {
 					parts[readCurrentPart] = rawData;
 					readParts = parts.filter(String).length
+					markReadQR(readCurrentPart);
 					if (readParts < totalParts) 
-						BEEP2.play();
+						if (beepOnNewQR) BEEP2.play();
 				}
 				
 				if (readParts == totalParts) {
 					var songData = parts.join('');				
 					loadSong(songData, true);
 					stopScanning();
-					progressBar.style.display = 'none';
-					return;
-				} else {
-					progressBar.max = totalParts;
-					progressBar.value = readParts;
-					progressBar.style.display = 'block';
 				}
 			}
 		}
@@ -141,7 +138,6 @@ function loadSong(rawData, autoplay) {
 	document.getElementById('audioSource').src = 'data:audio/opus;base64,' + rawData;
 	document.getElementById('audioPlayer').load();
 	if (autoplay) playSong()
-	document.getElementById('log').value = rawData + '\n' + document.getElementById('log').value;	
 }
 
 function playSong() {
@@ -167,6 +163,40 @@ function scanSong() {
 
 	requestAnimationFrame(tick);
 }	
+
+function initQRsTable(totalQRs) {
+	const items = Math.trunc(Math.sqrt(totalQRs));
+	const cols = items;
+	const rows = ((totalQRs % items) == 0) ? items : items + 1;
+	
+	var table = document.getElementById('scannedQRs');
+	table.innerHTML = "<tbody></tbody>";
+	var tbody = table.getElementsByTagName('tbody')[0];
+	
+	var cellIndex = 0;
+	for(var r=0; r<rows; r++) {
+		var row = tbody.insertRow();
+		for(var c=0; c<cols; c++) {
+			cellIndex++;
+			if (cellIndex > totalQRs) break;
+			var cell = row.insertCell();
+			cell.appendChild(document.createTextNode(cellIndex));
+		}
+		if (cellIndex > totalQRs) break;
+	}	
+}
+
+function markReadQR(qrIndex) {
+	var table = document.getElementById('scannedQRs');
+	for (var i = 0, row; row = table.rows[i]; i++) {
+		for (var j = 0, cell; cell = row.cells[j]; j++) {
+			if (cell.innerText == qrIndex) {
+				cell.style.backgroundColor = 'yellow';
+				return;
+			}
+		}  
+	}
+}
 
 function l2n(s) {	
 	var index = ALPHABET.indexOf(s.charAt(0));
