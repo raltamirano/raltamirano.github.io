@@ -1,29 +1,43 @@
+#topContainer {
+    height: 5em;
+    margin-bottom: 0px;
+	clear: both;
+}
+
+#startScan {
+	height: 5em;
+	width: 5em;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+#audioPlayer {
+	width: 30em;
+	vertical-align: middle;
+}
+
 #scannerContainer {
-    width:100%;
-    height:20em;
-    margin-right:0px;
+    width: 100%;
+    height: 20em;
+    margin-right: 0px;
 }
 
 #videoContainer {
 	float: left;
+    height: 10em;
 	margin: 0;
 }
 
 #scannedQRsContainer {
-	float: left;	
+    height: 10em;
 }
-
-#scannedInfoContainer {
-	
-}
-
 
 #scannedQRs {
-	font-size: 2em;
+	font-size: 1.5em;
 }
 
 #scannedQRs th, td {
-  border: .1em solid black;
+	border: 0.1em solid black;
 }
 
 .scannedQRCell {
