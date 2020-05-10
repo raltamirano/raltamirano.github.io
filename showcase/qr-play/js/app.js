@@ -172,9 +172,9 @@ function scanSong() {
 }	
 
 function initQRsTable(totalQRs) {
-	const items = Math.trunc(Math.sqrt(totalQRs));
+	const items = Math.ceil(Math.sqrt(totalQRs));
 	const cols = items;
-	const rows = ((totalQRs % items) == 0) ? items : items + 1;
+	const rows = items; // ((totalQRs % items) == 0) ? items : items + 1;
 	
 	var table = document.getElementById('scannedQRs');
 	table.innerHTML = "<tbody></tbody>";
@@ -198,7 +198,7 @@ function markReadQR(qrIndex) {
 	for (var i = 0, row; row = table.rows[i]; i++) {
 		for (var j = 0, cell; cell = row.cells[j]; j++) {
 			if (cell.innerText == qrIndex) {
-				cell.style.backgroundColor = 'yellow';
+				cell.className = 'scannedQRCell';
 				return;
 			}
 		}  

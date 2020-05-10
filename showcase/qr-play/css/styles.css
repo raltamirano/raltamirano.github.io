@@ -1,0 +1,27 @@
+#scannerContainer {
+    width:100%;
+    height:30em;
+    margin-right:0px;
+}
+
+#videoContainer {
+	float: left;
+	margin: 0;
+}
+
+#scannedQRsContainer {
+	
+}
+
+#scannedQRs {
+	font-size: 2em;
+}
+
+#scannedQRs th, td {
+  border: .1em solid black;
+}
+
+.scannedQRCell {
+	background-color: green;
+}
+
