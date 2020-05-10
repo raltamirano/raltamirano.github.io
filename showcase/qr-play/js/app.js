@@ -9,6 +9,7 @@ var localStream;
 var parts = [];
 var totalParts = null;
 var beepOnNewQR = false;
+var scanningQRs = false;
 
 function init() {
 	canvasElement = document.getElementById("canvas");
@@ -53,10 +54,11 @@ function tick() {
 		canvasElement.width = video.videoWidth;
 		canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
 		var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
-		for(var i=0; i<3; i++)
-			scanImage(imageData);
+		scanImage(imageData);
 	}
-	requestAnimationFrame(tick);
+	
+	if (scanningQRs)
+		enqueueFrameScan();
 }
 
 function convertDataUrlToImageData(URI) {
@@ -93,25 +95,27 @@ function scanImage(imageData) {
 					totalParts = readTotalParts;
 					initQRsTable(totalParts);
 				} else if (totalParts != readTotalParts) {
-					// If we just start reading a new block of parts while still reading the previous one, 
-					// reset everything 
+					// If we just start reading a new block of parts while
+					// still reading the previous one, reset everything 
 					stopScanning();
-					return;
 				}		
 
-				var readParts = parts.filter(String).length;				
-				if (!parts[readCurrentPart]) {
-					parts[readCurrentPart] = rawData;
-					readParts = parts.filter(String).length
-					markReadQR(readCurrentPart);
-					if (readParts < totalParts) 
-						if (beepOnNewQR) BEEP2.play();
-				}
-				
-				if (readParts == totalParts) {
-					var songData = parts.join('');				
-					loadSong(songData, true);
-					stopScanning();
+				if (scanningQRs) {
+					var readParts = parts.filter(String).length;				
+					if (!parts[readCurrentPart]) {
+						parts[readCurrentPart] = rawData;					
+						markReadQR(readCurrentPart);
+						
+						readParts = parts.filter(String).length;
+						if (readParts < totalParts) 
+							if (beepOnNewQR) BEEP2.play();
+					}
+					
+					if (readParts == totalParts) {
+						var songData = parts.join('');				
+						loadSong(songData, true);
+						stopScanning();
+					}
 				}
 			}
 		}
@@ -126,9 +130,9 @@ function stopScanning() {
 		localStream.getTracks().forEach(track => track.stop());
 		localStream = null;	
 	}
-	if (video) {
+	
+	if (video)
 		video.srcObject = null;
-	}
 	
 	document.getElementById('canvas').style.display = 'none'; 	
 	document.getElementById('scanProgress').style.display = 'none';
@@ -145,6 +149,7 @@ function playSong() {
 }
 
 function resetScanningState() {
+	scanningQRs = false;
 	parts = [];
 	totalParts = null;
 }
@@ -152,16 +157,18 @@ function resetScanningState() {
 function scanSong() {
 	resetScanningState();
 	
-	navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
-	  localStream = stream;
-	  video.srcObject = stream;
-	  video.setAttribute("playsinline", true);
-	  video.play();
-	  document.getElementById('canvas').style.display = 'block';
-	  requestAnimationFrame(tick);
-	});
+	navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+		.then(function(stream) {
+		  localStream = stream;
+		  video.srcObject = stream;
+		  video.setAttribute("playsinline", true);
+		  video.play();
+		  document.getElementById('canvas').style.display = 'block';
+		  enqueueFrameScan();
+		});
 
-	requestAnimationFrame(tick);
+	//enqueueFrameScan();
+	scanningQRs = true;
 }	
 
 function initQRsTable(totalQRs) {
@@ -197,6 +204,12 @@ function markReadQR(qrIndex) {
 		}  
 	}
 }
+
+function enqueueFrameScan() {
+	//requestAnimationFrame(tick);
+	setTimeout(tick, 500);
+}
+
 
 function l2n(s) {	
 	var index = ALPHABET.indexOf(s.charAt(0));
